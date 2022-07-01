@@ -7,28 +7,31 @@ import 'dart:ffi' as ffi;
 
 class Texturerender {
   static const MethodChannel _channel = MethodChannel('texturerender');
-  final Set<int> _ids = {};
+  final Map<int, ValueNotifier<int?>> _ids = {};
   ffi.Pointer<ffi.Uint8> _previousFrame = ffi.nullptr;
-  final ValueNotifier<int?> textureId = ValueNotifier<int?>(null);
+
+  Set<int> get ids => _ids.keys.toSet();
 
   register(
     int id,
     Function(bool success) onDone,
   ) {
-    if (_ids.contains(id)) {
+    if (_ids.containsKey(id)) {
       onDone(false);
       return;
     }
-    _registerTexture(id).then((_) {
+    _registerTexture(id).then((texId) {
       onDone(true);
-      _ids.add(id);
+      _ids.addAll(
+        {
+          id: ValueNotifier<int?>(texId),
+        },
+      );
     });
   }
 
-  Set<int> get ids => _ids;
-
   unregister(int id, Function(bool success) onDone) {
-    if (!_ids.contains(id)) {
+    if (!_ids.containsKey(id)) {
       onDone(false);
       return;
     }
@@ -39,9 +42,9 @@ class Texturerender {
   }
 
   dispose() {
-    for (var id in _ids) {
+    _ids.forEach((id, texId) {
       _unregisterTexture(id);
-    }
+    });
     _ids.clear();
   }
 
@@ -50,13 +53,14 @@ class Texturerender {
     return version;
   }
 
-  Future<void> _registerTexture(int id) async {
-    textureId.value = await _channel.invokeMethod(
+  Future<int> _registerTexture(int id) async {
+    int texId = await _channel.invokeMethod(
       "RegisterTexture",
       {
         "id": id,
       },
     );
+    return texId;
   }
 
   Future<void> update(int id, ffi.Pointer<ffi.Uint8> buffer, int width, int height) async {
@@ -79,19 +83,24 @@ class Texturerender {
     );
   }
 
-  Widget widget(int width, int height) => ValueListenableBuilder<int?>(
-      valueListenable: textureId,
-      builder: (context, texId, _) {
-        if (texId != null) {
-          return FittedBox(
-            fit: BoxFit.scaleDown,
-            child: SizedBox(
-              width: width.toDouble(),
-              height: height.toDouble(),
-              child: Texture(textureId: texId),
-            ),
-          );
-        }
-        return Container();
-      });
+  Widget? widget(int id, int width, int height) {
+    if (_ids.containsKey(id)) {
+      return ValueListenableBuilder<int?>(
+          valueListenable: _ids[id]!,
+          builder: (context, texId, _) {
+            if (texId != null) {
+              return FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
+                  width: width.toDouble(),
+                  height: height.toDouble(),
+                  child: Texture(textureId: texId),
+                ),
+              );
+            }
+            return Container();
+          });
+    }
+    return null;
+  }
 }
