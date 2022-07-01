@@ -1,15 +1,49 @@
 # texturerender
 
-A new flutter plugin project.
+A flutter plugin to directly Interface with the Texture Widget on Windows using a Pointer
 
-## Getting Started
+| Android | iOS | Linux | Windows | MacOS | Web |
+| ------- | --- | ----- | ------- | ----- | --- |
+| ❌       | ❌   | ❌     | ✅       | ❌     | ❌   |
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+## How to use
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Initialize a new Texture with an ID
+```dart
+int id = 0;
+Texturerender tr = Texturerender(id: id, onRegistered: () {
+    print(tr.textureId.value);
+    // now you can start rendering to the texture
+});
+```
 
+### Update the pixelbuffer
+
+```dart
+int id = 0;
+ffi.Pointer<Uint8> bytes = ...; // use ffi.calloc or get an external Pointer
+int width = 1920;
+int height = 1080;
+tr.update(id,bytes, width, height);
+
+// the last Pointer is automatically freed when receiving a new buffer
+```
+
+### Display the Texture in your Widgettree 
+```dart
+ ValueListenableBuilder(
+    valueListenable: tr.textureId,
+    builder: (context, textureId, _) {
+        if (tr.textureId.value != null) {
+            return FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
+                    width: width.toDouble(),
+                    height: height.toDouble(),
+                    child: Texture(textureId: tr.textureId.value!),
+                ),
+            );
+        }
+        return Container();
+});
+```
