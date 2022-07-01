@@ -91,7 +91,7 @@ class Texturerender {
     );
   }
 
-  Widget? widget(int id, int width, int height) {
+  Widget? widget(int id) {
     if (_ids.containsKey(id)) {
       return ValueListenableBuilder<Tex>(
           valueListenable: _ids[id]!,
