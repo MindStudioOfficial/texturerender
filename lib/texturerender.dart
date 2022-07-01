@@ -69,6 +69,10 @@ class Texturerender {
   }
 
   Future<void> update(int id, ffi.Pointer<ffi.Uint8> buffer, int width, int height) async {
+    if (!_ids.containsKey(id)) {
+      ffi.calloc.free(buffer);
+      return;
+    }
     await _channel.invokeMethod('UpdateFrame', {
       "id": id,
       "width": width,
