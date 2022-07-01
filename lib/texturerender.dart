@@ -52,4 +52,20 @@ class Texturerender {
       },
     );
   }
+
+  Widget widget(int width, int height) => ValueListenableBuilder<int?>(
+      valueListenable: textureId,
+      builder: (context, texId, _) {
+        if (texId != null) {
+          return FittedBox(
+            fit: BoxFit.scaleDown,
+            child: SizedBox(
+              width: width.toDouble(),
+              height: height.toDouble(),
+              child: Texture(textureId: texId),
+            ),
+          );
+        }
+        return Container();
+      });
 }
