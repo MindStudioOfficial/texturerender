@@ -7,16 +7,42 @@ import 'dart:ffi' as ffi;
 
 class Texturerender {
   static const MethodChannel _channel = MethodChannel('texturerender');
-  int id;
+  final Set<int> _ids = {};
   ffi.Pointer<ffi.Uint8> _previousFrame = ffi.nullptr;
   final ValueNotifier<int?> textureId = ValueNotifier<int?>(null);
 
-  Texturerender({required this.id, required void Function() onRegistered}) {
-    _registerTexture().then((_) => onRegistered());
+  register(
+    int id,
+    Function(bool success) onDone,
+  ) {
+    if (_ids.contains(id)) {
+      onDone(false);
+      return;
+    }
+    _registerTexture(id).then((_) {
+      onDone(true);
+      _ids.add(id);
+    });
+  }
+
+  Set<int> get ids => _ids;
+
+  unregister(int id, Function(bool success) onDone) {
+    if (!_ids.contains(id)) {
+      onDone(false);
+      return;
+    }
+    _unregisterTexture(id).then((_) {
+      onDone(true);
+    });
+    _ids.remove(id);
   }
 
   dispose() {
-    _unregisterTexture();
+    for (var id in _ids) {
+      _unregisterTexture(id);
+    }
+    _ids.clear();
   }
 
   static Future<String?> get platformVersion async {
@@ -24,7 +50,7 @@ class Texturerender {
     return version;
   }
 
-  Future<void> _registerTexture() async {
+  Future<void> _registerTexture(int id) async {
     textureId.value = await _channel.invokeMethod(
       "RegisterTexture",
       {
@@ -44,7 +70,7 @@ class Texturerender {
     _previousFrame = buffer;
   }
 
-  Future<void> _unregisterTexture() async {
+  Future<void> _unregisterTexture(int id) async {
     await _channel.invokeMethod(
       "UnregisterTexture",
       {
