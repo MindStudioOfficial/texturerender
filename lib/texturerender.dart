@@ -98,13 +98,10 @@ class Texturerender {
         valueListenable: _ids[id]!,
         builder: (context, tex, _) {
           if (tex.textureId != null) {
-            return FittedBox(
-              fit: BoxFit.scaleDown,
-              child: SizedBox(
-                width: tex.size.width,
-                height: tex.size.height,
-                child: Texture(textureId: tex.textureId!),
-              ),
+            return SizedBox(
+              width: tex.size.width,
+              height: tex.size.height,
+              child: Texture(textureId: tex.textureId!),
             );
           }
           return Container();
