@@ -17,33 +17,32 @@ class Texturerender {
     return _ids.keys.reduce((a, b) => a > b ? a : b) + 1;
   }
 
-  register(
-    int id,
-    Function(bool success) onDone,
-  ) {
+  Future<bool> register(int id) async {
+    Completer<bool> c = Completer<bool>();
     if (_ids.containsKey(id)) {
-      onDone(false);
-      return;
+      c.complete(false);
     }
     _registerTexture(id).then((texId) {
-      onDone(true);
       _ids.addAll(
         {
           id: ValueNotifier<int?>(texId),
         },
       );
+      c.complete(true);
     });
+    return c.future;
   }
 
-  unregister(int id, Function(bool success) onDone) {
+  Future<bool> unregister(int id) async {
+    Completer<bool> c = Completer<bool>();
     if (!_ids.containsKey(id)) {
-      onDone(false);
-      return;
+      c.complete(false);
     }
     _unregisterTexture(id).then((_) {
-      onDone(true);
+      c.complete(true);
     });
     _ids.remove(id);
+    return c.future;
   }
 
   dispose() {
