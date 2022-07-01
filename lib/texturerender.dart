@@ -25,7 +25,7 @@ class Texturerender {
     _registerTexture(id).then((texId) {
       _ids.addAll(
         {
-          id: ValueNotifier<Tex>(Tex(textureId: texId, width: 0, height: 0)),
+          id: ValueNotifier<Tex>(Tex(textureId: texId, size: Size.zero)),
         },
       );
       c.complete(true);
@@ -72,6 +72,8 @@ class Texturerender {
       ffi.calloc.free(buffer);
       return;
     }
+    _ids[id]!.value.size = Size(width.toDouble(), height.toDouble());
+
     await _channel.invokeMethod('UpdateFrame', {
       "id": id,
       "width": width,
@@ -100,8 +102,8 @@ class Texturerender {
               return FittedBox(
                 fit: BoxFit.scaleDown,
                 child: SizedBox(
-                  width: tex.width.toDouble(),
-                  height: tex.height.toDouble(),
+                  width: tex.size.width,
+                  height: tex.size.height,
                   child: Texture(textureId: tex.textureId!),
                 ),
               );
@@ -115,7 +117,6 @@ class Texturerender {
 
 class Tex {
   int? textureId;
-  int width = 0;
-  int height = 0;
-  Tex({required this.textureId, required this.width, required this.height});
+  Size size;
+  Tex({required this.textureId, required this.size});
 }
