@@ -45,10 +45,10 @@ class Texturerender {
     return c.future;
   }
 
-  dispose() {
-    _ids.forEach((id, texId) {
-      _unregisterTexture(id);
-    });
+  Future<void> dispose() async {
+    for (int id in _ids.keys) {
+      await _unregisterTexture(id);
+    }
     _ids.clear();
   }
 
