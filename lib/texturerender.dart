@@ -93,25 +93,22 @@ class Texturerender {
     );
   }
 
-  Widget? widget(int id) {
-    if (_ids.containsKey(id)) {
-      return ValueListenableBuilder<Tex>(
-          valueListenable: _ids[id]!,
-          builder: (context, tex, _) {
-            if (tex.textureId != null) {
-              return FittedBox(
-                fit: BoxFit.scaleDown,
-                child: SizedBox(
-                  width: tex.size.width,
-                  height: tex.size.height,
-                  child: Texture(textureId: tex.textureId!),
-                ),
-              );
-            }
-            return Container();
-          });
-    }
-    return null;
+  Widget widget(int id) {
+    return ValueListenableBuilder<Tex>(
+        valueListenable: _ids[id]!,
+        builder: (context, tex, _) {
+          if (tex.textureId != null) {
+            return FittedBox(
+              fit: BoxFit.scaleDown,
+              child: SizedBox(
+                width: tex.size.width,
+                height: tex.size.height,
+                child: Texture(textureId: tex.textureId!),
+              ),
+            );
+          }
+          return Container();
+        });
   }
 }
 
