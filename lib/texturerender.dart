@@ -7,7 +7,7 @@ import 'dart:ffi' as ffi;
 
 class Texturerender {
   static const MethodChannel _channel = MethodChannel('texturerender');
-  final Map<int, ValueNotifier<int?>> _ids = {};
+  final Map<int, ValueNotifier<Tex>> _ids = {};
   ffi.Pointer<ffi.Uint8> _previousFrame = ffi.nullptr;
 
   Set<int> get ids => _ids.keys.toSet();
@@ -25,7 +25,7 @@ class Texturerender {
     _registerTexture(id).then((texId) {
       _ids.addAll(
         {
-          id: ValueNotifier<int?>(texId),
+          id: ValueNotifier<Tex>(Tex(textureId: texId, width: 0, height: 0)),
         },
       );
       c.complete(true);
@@ -93,16 +93,16 @@ class Texturerender {
 
   Widget? widget(int id, int width, int height) {
     if (_ids.containsKey(id)) {
-      return ValueListenableBuilder<int?>(
+      return ValueListenableBuilder<Tex>(
           valueListenable: _ids[id]!,
-          builder: (context, texId, _) {
-            if (texId != null) {
+          builder: (context, tex, _) {
+            if (tex.textureId != null) {
               return FittedBox(
                 fit: BoxFit.scaleDown,
                 child: SizedBox(
-                  width: width.toDouble(),
-                  height: height.toDouble(),
-                  child: Texture(textureId: texId),
+                  width: tex.width.toDouble(),
+                  height: tex.height.toDouble(),
+                  child: Texture(textureId: tex.textureId!),
                 ),
               );
             }
@@ -111,4 +111,11 @@ class Texturerender {
     }
     return null;
   }
+}
+
+class Tex {
+  int? textureId;
+  int width = 0;
+  int height = 0;
+  Tex({required this.textureId, required this.width, required this.height});
 }
