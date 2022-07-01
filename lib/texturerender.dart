@@ -12,6 +12,10 @@ class Texturerender {
 
   Set<int> get ids => _ids.keys.toSet();
 
+  int getUniqueId() {
+    return _ids.keys.reduce((a, b) => a > b ? a : b) + 1;
+  }
+
   register(
     int id,
     Function(bool success) onDone,
