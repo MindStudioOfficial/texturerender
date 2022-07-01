@@ -8,7 +8,6 @@ import 'dart:ffi' as ffi;
 class Texturerender {
   static const MethodChannel _channel = MethodChannel('texturerender');
   final Map<int, ValueNotifier<Tex>> _ids = {};
-  ffi.Pointer<ffi.Uint8> _previousFrame = ffi.nullptr;
 
   Set<int> get ids => _ids.keys.toSet();
 
@@ -25,7 +24,13 @@ class Texturerender {
     _registerTexture(id).then((texId) {
       _ids.addAll(
         {
-          id: ValueNotifier<Tex>(Tex(textureId: texId, size: Size.zero)),
+          id: ValueNotifier<Tex>(
+            Tex(
+              textureId: texId,
+              size: Size.zero,
+              previousFrame: ffi.nullptr,
+            ),
+          ),
         },
       );
       c.complete(true);
@@ -80,8 +85,9 @@ class Texturerender {
       "height": height,
       "buffer": buffer.address,
     });
-    if (_previousFrame != ffi.nullptr) ffi.calloc.free(_previousFrame);
-    _previousFrame = buffer;
+    ffi.Pointer prev = _ids[id]!.value.previousFrame;
+    if (prev != ffi.nullptr) ffi.calloc.free(prev);
+    _ids[id]!.value.previousFrame = buffer;
   }
 
   Future<void> _unregisterTexture(int id) async {
@@ -112,5 +118,7 @@ class Texturerender {
 class Tex {
   int? textureId;
   Size size;
-  Tex({required this.textureId, required this.size});
+  ffi.Pointer<ffi.Uint8> previousFrame = ffi.nullptr;
+
+  Tex({required this.textureId, required this.size, required this.previousFrame});
 }
