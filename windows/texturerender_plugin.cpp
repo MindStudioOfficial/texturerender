@@ -120,9 +120,9 @@ namespace
       int32_t height = std::get<int32_t>(arguments[flutter::EncodableValue("height")]);
 
       int64_t bufferptra = std::get<int64_t>(arguments[flutter::EncodableValue("buffer")]);
-      //std::vector<uint8_t> buffer = std::get<std::vector<uint8_t>>(arguments[flutter::EncodableValue("buffer")]);
+      // std::vector<uint8_t> buffer = std::get<std::vector<uint8_t>>(arguments[flutter::EncodableValue("buffer")]);
 
-      uint8_t *bufferptr = reinterpret_cast<uint8_t*>(bufferptra);
+      uint8_t *bufferptr = reinterpret_cast<uint8_t *>(bufferptra);
 
       auto frame = frames_.find(id);
       if (frame == frames_.end())

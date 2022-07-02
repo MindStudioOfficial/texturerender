@@ -16,6 +16,17 @@ class Texturerender {
     return _ids.keys.reduce((a, b) => a > b ? a : b) + 1;
   }
 
+  /*
+  Texturerender() {
+    WidgetsFlutterBinding.ensureInitialized();
+    _channel.setMethodCallHandler((call) async {
+      if (call.method.compareTo("FreeBuffer") == 0) {
+        print(call.arguments);
+      }
+      return true;
+    });
+  }*/
+
   Future<bool> register(int id) async {
     Completer<bool> c = Completer<bool>();
     if (_ids.containsKey(id)) {
@@ -86,7 +97,9 @@ class Texturerender {
       "buffer": buffer.address,
     });
     ffi.Pointer prev = _ids[id]!.value.previousFrame;
-    if (prev != ffi.nullptr) ffi.calloc.free(prev);
+    Future.delayed(const Duration(milliseconds: 10), () {
+      if (prev != ffi.nullptr) ffi.calloc.free(prev);
+    });
     _ids[id]!.value.previousFrame = buffer;
   }
 

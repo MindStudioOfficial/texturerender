@@ -18,12 +18,13 @@ public:
 
     ~Frame();
 
+
 private:
     FlutterDesktopPixelBuffer flutter_pixel_buffer_{};
     flutter::TextureRegistrar *texture_registrar_ = nullptr;
     std::unique_ptr<flutter::TextureVariant> texture_ = nullptr;
     int64_t texture_id_;
-    mutable std::mutex mutex_;
+    mutable std::mutex mutex_;  
 };
 
 #endif
