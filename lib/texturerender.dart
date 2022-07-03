@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart' as ffi;
@@ -73,6 +74,11 @@ class Texturerender {
     return version;
   }
 
+  Size? texSize(int id) {
+    if (_ids[id] != null) return _ids[id]!.value.size;
+    return null;
+  }
+
   Future<int> _registerTexture(int id) async {
     int texId = await _channel.invokeMethod(
       "RegisterTexture",
@@ -114,18 +120,21 @@ class Texturerender {
 
   Widget widget(int id) {
     return ValueListenableBuilder<Tex>(
-        valueListenable: _ids[id]!,
-        builder: (context, tex, _) {
-          if (tex.textureId != null) {
-            return SizedBox(
-              width: tex.size.width,
-              height: tex.size.height,
-              child: Texture(textureId: tex.textureId!),
-            );
-          }
-          return Container();
-        });
+      valueListenable: _ids[id]!,
+      builder: (context, tex, _) {
+        if (tex.textureId != null) {
+          return SizedBox(
+            width: tex.size.width,
+            height: tex.size.height,
+            child: Texture(textureId: tex.textureId!),
+          );
+        }
+        return Container();
+      },
+    );
   }
+
+  ValueListenable<Tex>? textureInfo(int id) => _ids[id];
 }
 
 class Tex {
