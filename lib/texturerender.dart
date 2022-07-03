@@ -94,7 +94,7 @@ class Texturerender {
       ffi.calloc.free(buffer);
       return;
     }
-    _ids[id]!.value.size = Size(width.toDouble(), height.toDouble());
+    _ids[id]!.value = _ids[id]!.value.copyWith(size: Size(width.toDouble(), height.toDouble()));
 
     await _channel.invokeMethod('UpdateFrame', {
       "id": id,
@@ -106,7 +106,7 @@ class Texturerender {
     Future.delayed(const Duration(milliseconds: 10), () {
       if (prev != ffi.nullptr) ffi.calloc.free(prev);
     });
-    _ids[id]!.value.previousFrame = buffer;
+    _ids[id]!.value = _ids[id]!.value.copyWith(previousFrame: buffer);
   }
 
   Future<void> _unregisterTexture(int id) async {
@@ -143,4 +143,11 @@ class Tex {
   ffi.Pointer<ffi.Uint8> previousFrame = ffi.nullptr;
 
   Tex({required this.textureId, required this.size, required this.previousFrame});
+
+  Tex copyWith({int? textureId, Size? size, ffi.Pointer<ffi.Uint8>? previousFrame}) {
+    return Tex(
+        textureId: textureId ?? this.textureId,
+        size: size ?? this.size,
+        previousFrame: previousFrame ?? this.previousFrame);
+  }
 }
