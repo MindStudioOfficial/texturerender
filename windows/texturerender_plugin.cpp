@@ -107,14 +107,15 @@ namespace
       {
         it->second = std::make_unique<Frame>(texture_registrar_);
 
+        /*
         it->second->SetReleaseCallback(
             [](void *user_data)
             {
               user_release_context *context = (user_release_context *)user_data;
               int64_t ptra = reinterpret_cast<int64_t>(context->buffer);
               context->channel->InvokeMethod("FreeBuffer", std::make_unique<flutter::EncodableValue>(ptra));
-              free(context);
-            });
+              delete context;
+            });*/
       }
       return result->Success(flutter::EncodableValue(it->second->texture_id()));
     }
@@ -138,12 +139,14 @@ namespace
       {
         return result->Error("-2", "Texture was not found.");
       }
-
-      user_release_context *urc = (user_release_context *)calloc(1, sizeof(user_release_context));
+      /*
+      user_release_context *urc = new user_release_context;
       urc->channel = channel_.get();
       urc->buffer = bufferptr;
 
-      frame->second->SetReleaseContext(urc);
+      frame->second->SetReleaseContext(urc);*/
+
+      
       frame->second->Update(bufferptr, width, height);
 
       return result->Success();

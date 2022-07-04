@@ -17,6 +17,7 @@ class Texturerender {
     return _ids.keys.reduce((a, b) => a > b ? a : b) + 1;
   }
 
+  /*
   Texturerender() {
     WidgetsFlutterBinding.ensureInitialized();
 
@@ -28,12 +29,16 @@ class Texturerender {
         if (call.arguments is int) {
           int ptra = call.arguments;
           ffi.Pointer<ffi.Uint8> buffer = ffi.Pointer.fromAddress(ptra);
-          ffi.calloc.free(buffer);
+          if (buffer != ffi.nullptr) {
+            ffi.calloc.free(buffer);
+            // frees 10/20GB but there should also just be 10GB to free
+          }
         }
       }
       return true;
     });
-  }
+
+  }*/
 
   Future<bool> register(int id) async {
     Completer<bool> c = Completer<bool>();
@@ -109,11 +114,11 @@ class Texturerender {
       "height": height,
       "buffer": buffer.address,
     });
-
-    /*
-    _ids[id]!.value =
-        _ids[id]!.value.copyWith(previousBuffers: <ffi.Pointer<ffi.Uint8>>[buffer, ..._ids[id]!.value.previousBuffers]);
-        */
+    ffi.Pointer<ffi.Uint8> prev = _ids[id]!.value.previousBuffer;
+    Future.delayed(const Duration(milliseconds: 20), () {
+      if (prev != ffi.nullptr) ffi.calloc.free(prev);
+    });
+    _ids[id]!.value = _ids[id]!.value.copyWith(previousBuffer: buffer);
   }
 
   Future<void> _unregisterTexture(int id) async {
