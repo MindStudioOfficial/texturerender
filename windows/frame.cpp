@@ -33,4 +33,14 @@ void Frame::Update(uint8_t *buffer, int32_t width, int32_t height)
 Frame::~Frame()
 {
     texture_registrar_->UnregisterTexture(texture_id_);
+    free(flutter_pixel_buffer_.release_context);
 }
+
+void Frame::SetReleaseCallback(void(* release_callback)(void* release_context)) {
+    this->flutter_pixel_buffer_.release_callback = release_callback;
+}
+
+void Frame::SetReleaseContext(void* release_context) {
+    this->flutter_pixel_buffer_.release_context = release_context;
+}
+

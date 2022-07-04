@@ -17,16 +17,23 @@ class Texturerender {
     return _ids.keys.reduce((a, b) => a > b ? a : b) + 1;
   }
 
-  /*
   Texturerender() {
     WidgetsFlutterBinding.ensureInitialized();
+
     _channel.setMethodCallHandler((call) async {
+      // if method is FreeBuffer
       if (call.method.compareTo("FreeBuffer") == 0) {
-        print(call.arguments);
+        // if the arguments is a single int
+
+        if (call.arguments is int) {
+          int ptra = call.arguments;
+          ffi.Pointer<ffi.Uint8> buffer = ffi.Pointer.fromAddress(ptra);
+          ffi.calloc.free(buffer);
+        }
       }
       return true;
     });
-  }*/
+  }
 
   Future<bool> register(int id) async {
     Completer<bool> c = Completer<bool>();
@@ -40,7 +47,7 @@ class Texturerender {
             Tex(
               textureId: texId,
               size: Size.zero,
-              previousFrame: ffi.nullptr,
+              previousBuffer: ffi.nullptr,
             ),
           ),
         },
@@ -102,11 +109,11 @@ class Texturerender {
       "height": height,
       "buffer": buffer.address,
     });
-    ffi.Pointer prev = _ids[id]!.value.previousFrame;
-    Future.delayed(const Duration(milliseconds: 10), () {
-      if (prev != ffi.nullptr) ffi.calloc.free(prev);
-    });
-    _ids[id]!.value = _ids[id]!.value.copyWith(previousFrame: buffer);
+
+    /*
+    _ids[id]!.value =
+        _ids[id]!.value.copyWith(previousBuffers: <ffi.Pointer<ffi.Uint8>>[buffer, ..._ids[id]!.value.previousBuffers]);
+        */
   }
 
   Future<void> _unregisterTexture(int id) async {
@@ -140,14 +147,14 @@ class Texturerender {
 class Tex {
   int? textureId;
   Size size;
-  ffi.Pointer<ffi.Uint8> previousFrame = ffi.nullptr;
+  ffi.Pointer<ffi.Uint8> previousBuffer = ffi.nullptr;
 
-  Tex({required this.textureId, required this.size, required this.previousFrame});
+  Tex({required this.textureId, required this.size, required this.previousBuffer});
 
-  Tex copyWith({int? textureId, Size? size, ffi.Pointer<ffi.Uint8>? previousFrame}) {
+  Tex copyWith({int? textureId, Size? size, ffi.Pointer<ffi.Uint8>? previousBuffer}) {
     return Tex(
         textureId: textureId ?? this.textureId,
         size: size ?? this.size,
-        previousFrame: previousFrame ?? this.previousFrame);
+        previousBuffer: previousBuffer ?? this.previousBuffer);
   }
 }
